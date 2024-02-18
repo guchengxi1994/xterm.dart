@@ -129,7 +129,7 @@ class TerminalView extends StatefulWidget {
 
   /// Keyboard event handler of the terminal. This has higher priority than
   /// [shortcuts] and input handler of the terminal.
-  final FocusOnKeyCallback? onKey;
+  final FocusOnKeyEventCallback? onKey;
 
   /// True if no input should send to the terminal.
   final bool readOnly;
@@ -394,7 +394,7 @@ class TerminalViewState extends State<TerminalView> {
     setState(() => _composingText = text);
   }
 
-  KeyEventResult _handleKeyEvent(FocusNode focusNode, RawKeyEvent event) {
+  KeyEventResult _handleKeyEvent(FocusNode focusNode, KeyEvent event) {
     final resultOverride = widget.onKey?.call(focusNode, event);
     if (resultOverride != null && resultOverride != KeyEventResult.ignored) {
       return resultOverride;
@@ -410,7 +410,7 @@ class TerminalViewState extends State<TerminalView> {
       return shortcutResult;
     }
 
-    if (event is! RawKeyDownEvent) {
+    if (event is! KeyDownEvent) {
       return KeyEventResult.ignored;
     }
 
@@ -422,9 +422,12 @@ class TerminalViewState extends State<TerminalView> {
 
     final handled = widget.terminal.keyInput(
       key,
-      ctrl: event.isControlPressed,
-      alt: event.isAltPressed,
-      shift: event.isShiftPressed,
+      ctrl: event.physicalKey == PhysicalKeyboardKey.controlLeft ||
+          event.physicalKey == PhysicalKeyboardKey.controlRight,
+      alt: event.physicalKey == PhysicalKeyboardKey.altLeft ||
+          event.physicalKey == PhysicalKeyboardKey.altRight,
+      shift: event.physicalKey == PhysicalKeyboardKey.shiftLeft ||
+          event.physicalKey == PhysicalKeyboardKey.shiftRight,
     );
 
     if (handled) {
